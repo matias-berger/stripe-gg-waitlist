@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de espera · Shuttle Stripe</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #f5f4f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .wrap { width: 100%; max-width: 500px; }
+
+    .header { text-align: center; margin-bottom: 2rem; }
+
+    .logo {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 12px; font-weight: 500; color: #888; letter-spacing: 0.06em;
+      text-transform: uppercase; margin-bottom: 1.25rem;
+    }
+    .logo-dot { width: 7px; height: 7px; border-radius: 50%; background: #4A90D9; }
+
+    h1 { font-size: 24px; font-weight: 600; color: #111; margin-bottom: 0.4rem; }
+    .sub { font-size: 14px; color: #666; line-height: 1.5; }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e8e6e0;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .field-label {
+      font-size: 13px; font-weight: 500; color: #555;
+      display: block; margin-bottom: 6px;
+    }
+    .field-hint { font-weight: 400; color: #aaa; }
+    .field-row { margin-bottom: 1rem; }
+    .field-row:last-child { margin-bottom: 0; }
+
+    input[type=text], input[type=email], input[type=tel], select {
+      width: 100%; padding: 9px 12px;
+      border: 1px solid #ddd; border-radius: 8px;
+      font-size: 14px; color: #111; background: #fafafa;
+      outline: none; transition: border-color 0.15s;
+    }
+    input:focus, select:focus { border-color: #4A90D9; background: #fff; }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+    .section-label { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 10px; display: block; }
+
+    .trip-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .trip-option {
+      border: 1px solid #e0ddd8; border-radius: 8px;
+      padding: 10px 8px; cursor: pointer; text-align: center;
+      transition: border-color 0.15s, background 0.15s; user-select: none;
+    }
+    .trip-option:hover { border-color: #bbb; }
+    .trip-option.selected { border: 2px solid #4A90D9; background: #EBF4FD; }
+    .trip-time { font-size: 15px; font-weight: 600; color: #111; display: block; margin-bottom: 4px; }
+    .trip-option.selected .trip-time { color: #185FA5; }
+    .trip-tag {
+      font-size: 11px; font-weight: 500; display: inline-block;
+      padding: 2px 8px; border-radius: 20px;
+    }
+    .tag-full { background: #FDE8E1; color: #993C1D; }
+    .tag-open { background: #E3F2D4; color: #3B6D11; }
+
+    .stop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stop-option {
+      border: 1px solid #e0ddd8; border-radius: 8px;
+      padding: 10px 12px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s; user-select: none;
+    }
+    .stop-option:hover { border-color: #bbb; }
+    .stop-option.selected { border: 2px solid #4A90D9; background: #EBF4FD; }
+    .stop-name { font-size: 13px; font-weight: 500; color: #111; display: block; margin-bottom: 2px; }
+    .stop-option.selected .stop-name { color: #185FA5; }
+    .stop-addr { font-size: 11px; color: #888; display: block; }
+
+    .submit-btn {
+      width: 100%; padding: 13px;
+      background: #185FA5; color: #fff; border: none;
+      border-radius: 8px; font-size: 15px; font-weight: 500;
+      cursor: pointer; transition: background 0.15s; margin-top: 0.5rem;
+    }
+    .submit-btn:hover { background: #0C447C; }
+    .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .note { font-size: 12px; color: #aaa; text-align: center; margin-top: 0.75rem; }
+
+    /* Success */
+    .success-card { text-align: center; padding: 2.5rem 1.5rem; }
+    .check-circle {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: #E3F2D4; display: flex; align-items: center;
+      justify-content: center; margin: 0 auto 1.25rem;
+    }
+    .success-title { font-size: 20px; font-weight: 600; color: #111; margin-bottom: 0.4rem; }
+    .success-sub { font-size: 14px; color: #666; line-height: 1.5; margin-bottom: 1.25rem; }
+    .position-badge {
+      background: #f5f4f0; border-radius: 10px;
+      padding: 0.85rem 1rem; margin-bottom: 1rem;
+    }
+    .pos-num { font-size: 30px; font-weight: 600; color: #111; display: block; }
+    .pos-label { font-size: 12px; color: #888; }
+    .conf-detail { font-size: 13px; color: #555; margin: 3px 0; }
+
+    @media (max-width: 420px) {
+      .trip-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="logo"><div class="logo-dot"></div>Stripe Shuttle</div>
+    <h1>Lista de espera</h1>
+    <p class="sub">Elegí tu horario de salida y parada. Te avisamos si se libera un lugar.</p>
+  </div>
+
+  <div id="form-view">
+    <div class="card">
+      <div class="field-row">
+        <label class="field-label">Nombre completo</label>
+        <input type="text" id="name" placeholder="Tu nombre" />
+      </div>
+      <div class="field-row" style="margin-bottom:0">
+        <label class="field-label">Email del trabajo</label>
+        <input type="email" id="email" placeholder="vos@stripe.com" />
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="section-label">Horario de salida preferido</span>
+      <div class="trip-grid">
+        <div class="trip-option" id="trip-4pm" onclick="selectTrip(this,'4:00 PM')">
+          <span class="trip-time">4:00 PM</span>
+        </div>
+        <div class="trip-option" id="trip-540pm" onclick="selectTrip(this,'5:40 PM')">
+          <span class="trip-time">5:40 PM</span>
+        </div>
+        <div class="trip-option" id="trip-710pm" onclick="selectTrip(this,'7:10 PM')">
+          <span class="trip-time">7:10 PM</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="section-label">Parada de bajada</span>
+      <div class="stop-grid">
+        <div class="stop-option" id="opt-1" onclick="selectStop(this,'Arguello Blvd & Geary Blvd')">
+          <span class="stop-name">Arguello & Geary</span>
+          <span class="stop-addr">Parada final</span>
+        </div>
+        <div class="stop-option" id="opt-2" onclick="selectStop(this,'Divisadero St & Eddy St')">
+          <span class="stop-name">Divisadero & Eddy</span>
+          <span class="stop-addr">Parada 1</span>
+        </div>
+        <div class="stop-option" id="opt-3" onclick="selectStop(this,'Divisadero St & Haight St')">
+          <span class="stop-name">Divisadero & Haight</span>
+          <span class="stop-addr">Parada 2</span>
+        </div>
+        <div class="stop-option" id="opt-4" onclick="selectStop(this,'14th St & Belcher St')">
+          <span class="stop-name">14th & Belcher</span>
+          <span class="stop-addr">Parada 3</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="field-row">
+        <label class="field-label">Teléfono <span class="field-hint">(opcional — para alertas por SMS)</span></label>
+        <input type="tel" id="phone" placeholder="+1 (415) 000-0000" />
+      </div>
+      <div class="field-row" style="margin-bottom:0">
+        <label class="field-label">¿Con qué frecuencia usás este servicio?</label>
+        <select id="freq">
+          <option value="">Seleccioná una opción</option>
+          <option>Todos los días</option>
+          <option>3 a 4 días por semana</option>
+          <option>1 a 2 días por semana</option>
+          <option>Ocasionalmente</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">Anotarme en la lista de espera</button>
+    <p class="note">Te vamos a avisar por email si se abre un lugar. Sin spam.</p>
+  </div>
+
+  <div id="success-view" style="display:none;">
+    <div class="card success-card">
+      <div class="check-circle">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <path d="M5 13.5l5.5 5.5 10.5-10.5" stroke="#3B6D11" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="success-title">¡Estás en la lista!</p>
+      <p class="success-sub">Te vamos a avisar a <strong id="conf-email"></strong> si se libera un lugar.</p>
+      <div class="position-badge">
+        <span class="pos-num" id="conf-pos">—</span>
+        <span class="pos-label">tu posición en la lista de espera</span>
+      </div>
+      <p class="conf-detail">Salida: <strong id="conf-trip"></strong></p>
+      <p class="conf-detail">Parada: <strong id="conf-stop"></strong></p>
+    </div>
+    <p class="note">¿Preguntas? Contactá a tu coordinador de shuttle.</p>
+  </div>
+</div>
+
+<script>
+  let selectedStop = '';
+  let selectedTrip = '';
+  const KEY = 'shuttle_waitlist_v1';
+
+  function getList() {
+    try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch(e) { return []; }
+  }
+  function saveList(data) {
+    try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e) {}
+  }
+
+  function selectTrip(el, val) {
+    document.querySelectorAll('.trip-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedTrip = val;
+  }
+
+  function selectStop(el, val) {
+    document.querySelectorAll('.stop-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedStop = val;
+  }
+
+  function submitForm() {
+    const name = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const freq = document.getElementById('freq').value;
+
+    if (!name || !email || !selectedTrip || !selectedStop) {
+      alert('Por favor completá tu nombre, email, horario y parada.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert('Ingresá un email válido.');
+      return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Guardando...';
+
+    const list = getList();
+    if (list.find(e => e.email.toLowerCase() === email.toLowerCase() && e.trip === selectedTrip)) {
+      alert('Este email ya está en la lista para ese horario.');
+      btn.disabled = false;
+      btn.textContent = 'Anotarme en la lista de espera';
+      return;
+    }
+
+    const sameTrip = list.filter(e => e.trip === selectedTrip).length;
+    list.push({ name, email, phone, stop: selectedStop, trip: selectedTrip, freq, ts: new Date().toISOString() });
+    saveList(list);
+
+    document.getElementById('conf-email').textContent = email;
+    document.getElementById('conf-pos').textContent = '#' + (sameTrip + 1);
+    document.getElementById('conf-trip').textContent = selectedTrip;
+    document.getElementById('conf-stop').textContent = selectedStop;
+    document.getElementById('form-view').style.display = 'none';
+    document.getElementById('success-view').style.display = 'block';
+  }
+</script>
+</body>
+</html>
